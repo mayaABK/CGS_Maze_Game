@@ -2,6 +2,7 @@
 #include "PlacableActor.h"
 
 class Key;
+class Weapon;
 
 class Player : public PlacableActor
 {
@@ -18,6 +19,10 @@ public:
 	void AddMoney(int money) { m_money += money; }
 	int GetMoney() { return m_money; }
 
+	bool HasWeapon() { return m_hasWeapon; }
+	void PickupWeapon(Weapon* weapon);
+	void Shoot();
+
 	int GetLives() { return m_lives; }
 	void DecrementLives() { m_lives--; }
 
@@ -26,5 +31,7 @@ public:
 private:
 	Key* m_pCurrentKey;
 	int m_money;
+	bool m_hasWeapon;
+	Weapon* m_weapon;
 	int m_lives;
 };

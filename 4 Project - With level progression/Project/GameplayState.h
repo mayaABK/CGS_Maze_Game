@@ -31,9 +31,12 @@ public:
 	virtual void Enter() override;
 	virtual bool Update(bool processInput = true) override;
 	virtual void Draw() override;
+	void DrawTravelingBullet(int x, int y);
 
 private:
 	void HandleCollision(int newPlayerX, int newPlayerY);
 	bool Load();
 	void DrawHUD(const HANDLE& console);
+	void UpdateShooting(char input);
+	bool BulletIsTraveling(int x, int y);
 };
