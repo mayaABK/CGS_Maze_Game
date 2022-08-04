@@ -1,6 +1,7 @@
 #include "GameplayState.h"
 
 #include <iostream>
+#include <iomanip>
 #include <conio.h>
 #include <windows.h>
 #include <assert.h>
@@ -9,6 +10,7 @@
 #include "Key.h"
 #include "Door.h"
 #include "Money.h"
+#include "Weapon.h"
 #include "Goal.h"
 #include "AudioManager.h"
 #include "Utility.h"
@@ -60,6 +62,71 @@ void GameplayState::Enter()
 	Load();
 }
 
+bool GameplayState::BulletIsTraveling(int x, int y)
+{
+	if (m_pLevel->BulletHitActor(x, y))
+	{
+		return false;
+	}
+	else if (m_pLevel->IsSpace(x, y))
+	{
+		DrawTravelingBullet(x, y);
+		return true;
+	}
+	else {
+		//hit a wall
+		return false;
+	}
+}
+
+void GameplayState::UpdateShooting(char input)
+{
+	int x;
+	int y;
+	bool bulletIsTraveling = true;
+	if (input == 'i' || input == 'I')
+	{
+		x = m_player.GetXPosition();
+		y = m_player.GetYPosition() - 1;
+		for (y; y > 0 && bulletIsTraveling; y--)
+		{
+			bulletIsTraveling = BulletIsTraveling(x, y);
+		}
+
+	}
+	else if (input == 'j' || input == 'J')
+	{
+		x = m_player.GetXPosition() - 1;
+		y = m_player.GetYPosition();
+
+		for (x; x > 0 && bulletIsTraveling; x--)
+		{
+			bulletIsTraveling = BulletIsTraveling(x, y);
+		}
+
+	}
+	else if (input == 'k' || input == 'K')
+	{
+		x = m_player.GetXPosition();
+		y = m_player.GetYPosition() + 1;
+		for (y; y < m_pLevel->GetHeight() - 1 && bulletIsTraveling; y++)
+		{
+			bulletIsTraveling = BulletIsTraveling(x, y);
+		}
+	}
+	else if (input == 'l' || input == 'L')
+	{
+		x = m_player.GetXPosition() + 1;
+		y = m_player.GetYPosition();
+
+		for (x; x < m_pLevel->GetWidth() - 1 && bulletIsTraveling; x++)
+		{
+			bulletIsTraveling = BulletIsTraveling(x, y);
+		}
+	}
+	
+}
+
 bool GameplayState::Update(bool processInput)
 {
 	if (processInput && !m_beatLevel)
@@ -94,6 +161,13 @@ bool GameplayState::Update(bool processInput)
 			(char)input == 'S' || (char)input == 's')
 		{
 			newPlayerY++;
+		}
+		else if ( (char)input == 'I' || (char)input == 'i' || (char)input == 'J' || (char)input == 'j' || (char)input == 'K' || (char)input == 'k' || (char)input == 'L' || (char)input == 'l')
+		{
+			if (m_player.HasWeapon())
+			{
+				UpdateShooting((char)input);
+			}
 		}
 		else if (input == kEscapeKey)
 		{
@@ -189,6 +263,19 @@ void GameplayState::HandleCollision(int newPlayerX, int newPlayerY)
 			}
 			break;
 		}
+		case ActorType::Weapon:
+		{
+			Weapon* collidedWeapon = dynamic_cast<Weapon*>(collidedActor);
+			assert(collidedWeapon);
+			if (!m_player.HasWeapon())
+			{
+				m_player.PickupWeapon(collidedWeapon);
+				collidedWeapon->Remove();
+				m_player.SetPosition(newPlayerX, newPlayerY);
+			}
+
+			break;
+		}
 		case ActorType::Door:
 		{
 			Door* collidedDoor = dynamic_cast<Door*>(collidedActor);
@@ -237,6 +324,40 @@ void GameplayState::HandleCollision(int newPlayerX, int newPlayerY)
 	}
 }
 
+void GameplayState::DrawTravelingBullet(int x, int y)
+{
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	system("cls");
+
+	m_pLevel->Draw();
+
+	// Set cursor position for player 
+	COORD actorCursorPosition;
+	actorCursorPosition.X = m_player.GetXPosition();
+	actorCursorPosition.Y = m_player.GetYPosition();
+	SetConsoleCursorPosition(console, actorCursorPosition);
+	m_player.Draw();
+
+	// Set cursor for bullet
+	COORD bulletPosition;
+	bulletPosition.X = x;
+	bulletPosition.Y = y;
+	SetConsoleCursorPosition(console, bulletPosition);
+	m_player.Shoot();
+
+	// Set the cursor to the end of the level
+	COORD currentCursorPosition;
+	currentCursorPosition.X = 0;
+	currentCursorPosition.Y = m_pLevel->GetHeight();
+	SetConsoleCursorPosition(console, currentCursorPosition);
+
+	DrawHUD(console);
+	
+
+	Sleep(100);
+}
+
+
 void GameplayState::Draw()
 {
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -271,8 +392,15 @@ void GameplayState::DrawHUD(const HANDLE& console)
 	}
 	cout << endl;
 
+	int consoleWidth = (int)m_pLevel->GetWidth() - 2;
+
+	//Additional instructions
+	cout << Level::WAL;
+	cout << setw(consoleWidth) << left << " ijkl-shoot " << Level::WAL << endl;
+
 	// Left Side border
 	cout << Level::WAL;
+
 
 	cout << " wasd-move " << Level::WAL << " z-drop key " << Level::WAL;
 
@@ -288,10 +416,9 @@ void GameplayState::DrawHUD(const HANDLE& console)
 		cout << " ";
 	}
 
-	// RightSide border
+	// RightSide border 
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(console, &csbi);
-
 	COORD pos;
 	pos.X = m_pLevel->GetWidth() - 1;
 	pos.Y = csbi.dwCursorPosition.Y;

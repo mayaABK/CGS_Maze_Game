@@ -2,6 +2,7 @@
 
 #include "Player.h"
 #include "Key.h"
+#include "Weapon.h"
 #include "AudioManager.h"
 
 using namespace std;
@@ -12,6 +13,8 @@ Player::Player()
 	: PlacableActor(0, 0)
 	, m_pCurrentKey(nullptr)
 	, m_money(0)
+	, m_hasWeapon(false)
+	, m_weapon(nullptr)
 	, m_lives(kStartingNumberOfLives)
 {
 
@@ -49,6 +52,17 @@ void Player::DropKey()
 		m_pCurrentKey->Place(m_pPosition->x, m_pPosition->y);
 		m_pCurrentKey = nullptr;
 	}
+}
+
+void Player::PickupWeapon(Weapon* weapon)
+{
+	m_hasWeapon = true; 
+	m_weapon = weapon;
+}
+
+void Player::Shoot()
+{
+	m_weapon->DrawBullet();
 }
 
 void Player::Draw()

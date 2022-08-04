@@ -9,6 +9,7 @@
 #include "Door.h"
 #include "Goal.h"
 #include "Money.h"
+#include "Weapon.h"
 
 using namespace std;
 
@@ -159,6 +160,11 @@ bool Level::ConvertLevel(int* playerX, int* playerY)
 				m_pLevelData[index] = ' ';
 				m_pActors.push_back(new Money(x, y, 1 + rand() % 5));
 				break;
+			case 'w':
+			case 'W':
+				m_pLevelData[index] = ' ';
+				m_pActors.push_back(new Weapon(x, y, ActorColor::White));
+				break;
 			case '@':
 				m_pLevelData[index] = ' ';
 				if (playerX != nullptr && playerY != nullptr)
@@ -225,4 +231,32 @@ PlacableActor* Level::UpdateActors(int oldX, int oldY, int newX, int newY)
 	}
 
 	return collidedActor;
+}
+
+bool Level::BulletHitActor(int x, int y)
+{
+	int actorIdx = 0;
+	for (auto actor = m_pActors.begin(); actor != m_pActors.end(); ++actor) 
+	{
+		if ((*actor)->GetXPosition() == x
+			&& (*actor)->GetYPosition() == y)
+		{
+			if ((*actor)->GetType() == ActorType::Enemy)
+			{
+				(*actor)->Remove();
+				delete (*actor);
+				(*actor) = nullptr;
+				m_pActors.erase(m_pActors.begin() + actorIdx);
+
+				return true;
+			}
+			else {
+				return true;
+			}
+		}
+
+		actorIdx++;
+	}
+
+	return false;
 }

@@ -19,6 +19,7 @@ public:
 	bool Load(std::string levelName, int* playerX, int* playerY);
 	void Draw();
 	PlacableActor* UpdateActors(int oldX, int oldY, int newX, int newY);
+	bool BulletHitActor(int x, int y);
 
 	bool IsSpace(int x, int y);
 	bool IsWall(int x, int y);
