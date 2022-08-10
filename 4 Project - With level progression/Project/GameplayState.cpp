@@ -129,7 +129,7 @@ void GameplayState::UpdateShooting(char input)
 	
 }
 
-bool GameplayState::ProcessInput()
+void GameplayState::ProcessInput()
 {
 	int input = _getch();
 	int arrowInput = 0;

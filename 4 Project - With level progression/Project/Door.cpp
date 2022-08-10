@@ -34,7 +34,7 @@ void Door::HandleCollision(Player& player)
 		if (player.HasKey(this->GetColor()))
 		{
 			Open();
-			Remove();
+			this->Remove();
 			player.UseKey();
 			player.SetPosition(m_pPosition->x, m_pPosition->y);
 			AudioManager::GetInstance()->PlayDoorOpenSound();

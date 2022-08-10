@@ -18,7 +18,7 @@ void Money::Draw()
 void Money::HandleCollision(Player& player)
 {
 	AudioManager::GetInstance()->PlayMoneySound();
-	Remove();
+	this->Remove();
 	player.AddMoney(GetWorth());
 	player.SetPosition(m_pPosition->x, m_pPosition->y);
 }

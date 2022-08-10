@@ -27,7 +27,7 @@ void Weapon::HandleCollision(Player& player)
 	if (!player.HasWeapon())
 	{
 		player.PickupWeapon(this);
-		Remove();
+		this->Remove();
 		player.SetPosition(m_pPosition->x, m_pPosition->y);
 	}
 }

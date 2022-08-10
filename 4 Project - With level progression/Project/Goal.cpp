@@ -15,7 +15,7 @@ void Goal::Draw()
 
 void Goal::HandleCollision(Player& player)
 {
-	Remove();
+	this->Remove();
 	player.SetPosition(m_pPosition->x, m_pPosition->y);
 	player.Wins();
 }

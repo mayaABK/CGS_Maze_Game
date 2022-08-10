@@ -50,7 +50,7 @@ void Enemy::Update()
 void Enemy::HandleCollision(Player& player)
 {
 	AudioManager::GetInstance()->PlayLoseLivesSound();
-	Remove();
+	this->Remove();
 	player.SetPosition(m_pPosition->x, m_pPosition->y);
 
 	player.CollidedWithEnemy();

@@ -19,7 +19,7 @@ void Key::HandleCollision(Player& player)
 	if (!player.HasKey())
 	{
 		player.PickupKey(this);
-		Remove();
+		this->Remove();
 		player.SetPosition(m_pPosition->x, m_pPosition->y);
 		AudioManager::GetInstance()->PlayKeyPickupSound();
 	}
