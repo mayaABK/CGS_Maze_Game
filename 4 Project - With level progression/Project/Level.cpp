@@ -221,10 +221,17 @@ PlacableActor* Level::UpdateActors(int oldX, int oldY, int newX, int newY)
 
 		(*actor)->Update(); // Update all actors
 
+		if (!(*actor)->IsActive())
+		{
+			continue;
+		}
+		
 		if ((newX == (*actor)->GetXPosition() && newY == (*actor)->GetYPosition()) 
 			|| mayCrossPathsWithMovingActor && oldX == (*actor)->GetXPosition() && oldY == (*actor)->GetYPosition())
 		{
 			// should only be able to collide with one actor
+			// it is possible that the player tries to open the door when an enemy is about to hit them. in this case, player hits door.
+			//TODO: bug. if player hits door before enemy and has key, door is collidedActor. if player hits anything else before enemy, enemy is collidedActor
 			assert(collidedActor == nullptr);
 			collidedActor = (*actor);
 		}

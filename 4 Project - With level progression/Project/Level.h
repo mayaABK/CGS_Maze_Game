@@ -9,6 +9,7 @@ class Level
 	char* m_pLevelData;
 	int m_height;
 	int m_width;
+	bool m_didBeatLevel = false;
 
 	std::vector<PlacableActor*> m_pActors;
 
@@ -26,6 +27,9 @@ public:
 
 	int GetHeight() { return m_height; }
 	int GetWidth() { return m_width;  }
+
+	bool DidBeatLevel() { return m_didBeatLevel; }
+	void FinishedLevel() { m_didBeatLevel = true; }
 
 	static constexpr char WAL = (char)219;
 

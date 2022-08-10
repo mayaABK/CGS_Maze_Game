@@ -16,7 +16,6 @@ class GameplayState : public GameState
 	Player m_player;
 	Level* m_pLevel;
 
-	bool m_beatLevel;
 	int m_skipFrameCount;
 	static constexpr int kFramesToSkip = 2;
 
@@ -39,4 +38,6 @@ private:
 	void DrawHUD(const HANDLE& console);
 	void UpdateShooting(char input);
 	bool BulletIsTraveling(int x, int y);
+	void CheckBeatLevel();
+	bool ProcessInput();
 };
