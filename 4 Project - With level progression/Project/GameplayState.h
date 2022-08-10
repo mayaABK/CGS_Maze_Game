@@ -39,5 +39,5 @@ private:
 	void UpdateShooting(char input);
 	bool BulletIsTraveling(int x, int y);
 	void CheckBeatLevel();
-	bool ProcessInput();
+	void ProcessInput();
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "Point.h"
-#include "Player.h"
+
+class Player;
 
 enum class ActorColor
 {
