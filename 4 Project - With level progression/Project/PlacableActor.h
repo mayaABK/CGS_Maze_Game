@@ -1,6 +1,8 @@
 #pragma once
 #include "Point.h"
 
+class Player;
+
 enum class ActorColor
 {
 	Regular = 7,
@@ -48,6 +50,7 @@ public:
 	{
 
 	}
+	virtual void HandleCollision(Player& player) = 0;
 
 protected:
 	Point* m_pPosition;

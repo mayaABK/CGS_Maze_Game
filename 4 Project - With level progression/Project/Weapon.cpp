@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include "Weapon.h"
+#include "Player.h"
 
 void Weapon::Draw()
 {
@@ -19,4 +20,14 @@ void Weapon::DrawBullet()
 
 	std::cout << char(46);
 	SetConsoleTextAttribute(console, (int)ActorColor::Regular);
+}
+
+void Weapon::HandleCollision(Player& player)
+{
+	if (!player.HasWeapon())
+	{
+		player.PickupWeapon(this);
+		this->Remove();
+		player.SetPosition(m_pPosition->x, m_pPosition->y);
+	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "PlacableActor.h"
+#include "Player.h"
 
 class Door : public PlacableActor
 {
@@ -8,11 +9,11 @@ public:
 	virtual void Draw() override;
 
 	virtual ActorType GetType() override { return ActorType::Door;  }
-	bool IsOpen() { return m_isOpen;  }
-	void Open() { m_isOpen = true; }
+	virtual void HandleCollision(Player& player) override;
 
 private:
 	bool m_isOpen;
 	ActorColor m_closedColor;
+	void Open() { m_isOpen = true; }
 };
 

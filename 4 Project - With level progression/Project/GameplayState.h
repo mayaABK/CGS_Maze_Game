@@ -16,7 +16,6 @@ class GameplayState : public GameState
 	Player m_player;
 	Level* m_pLevel;
 
-	bool m_beatLevel;
 	int m_skipFrameCount;
 	static constexpr int kFramesToSkip = 2;
 
@@ -28,10 +27,13 @@ public:
 	GameplayState(StateMachineExampleGame* pOwner);
 	~GameplayState();
 
+	virtual GameStateType GetType() override { return GameStateType::Gameplay; }
+
 	virtual void Enter() override;
-	virtual bool Update(bool processInput = true) override;
 	virtual void Draw() override;
 	void DrawTravelingBullet(int x, int y);
+	virtual void Update() override;
+	void CheckBeatLevel();
 
 private:
 	void HandleCollision(int newPlayerX, int newPlayerY);
@@ -39,4 +41,5 @@ private:
 	void DrawHUD(const HANDLE& console);
 	void UpdateShooting(char input);
 	bool BulletIsTraveling(int x, int y);
+	void ProcessInput();
 };

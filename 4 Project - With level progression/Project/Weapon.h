@@ -1,5 +1,6 @@
 #pragma once
 #include "PlacableActor.h"
+#include "Player.h"
 
 enum class WeaponDirection
 {
@@ -18,6 +19,7 @@ public:
 	virtual ActorType GetType() override { return ActorType::Weapon; }
 	virtual void Draw() override;
 	void DrawBullet();
+	virtual void HandleCollision(Player& player) override;
 
 private:
 	WeaponDirection m_direction;

@@ -11,6 +11,7 @@ public:
 	SettingsState(StateMachineExampleGame* pOwner);
 	~SettingsState() = default;
 
-	virtual bool Update(bool processInput = true) override;
+	virtual GameStateType GetType() override { return GameStateType::Settings; }
 	virtual void Draw() override;
+	virtual void Update() override;
 };

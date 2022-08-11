@@ -1,5 +1,7 @@
 #pragma once
 #include "PlacableActor.h"
+#include "Player.h"
+
 class Goal : public PlacableActor
 {
 public:
@@ -7,5 +9,6 @@ public:
 
 	virtual ActorType GetType() override { return ActorType::Goal; }
 	virtual void Draw() override;
+	virtual void HandleCollision(Player& player) override;
 };
 

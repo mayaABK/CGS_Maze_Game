@@ -65,6 +65,16 @@ void Player::Shoot()
 	m_weapon->DrawBullet();
 }
 
+void Player::CollidedWithEnemy()
+{
+	m_lives--;
+
+	if (m_lives == 0)
+	{
+		m_isAlive = false;
+	}
+}
+
 void Player::Draw()
 {
 	cout << "@";

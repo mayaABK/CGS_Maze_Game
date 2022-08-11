@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <conio.h>
 #include <windows.h>
-#include <assert.h>
 
 #include "Enemy.h"
 #include "Key.h"
@@ -27,7 +26,6 @@ constexpr int kEscapeKey = 27;
 
 GameplayState::GameplayState(StateMachineExampleGame* pOwner)
 	: m_pOwner(pOwner)
-	, m_beatLevel(false)
 	, m_skipFrameCount(0)
 	, m_currentLevel(0)
 	, m_pLevel(nullptr)
@@ -105,7 +103,10 @@ void GameplayState::UpdateShooting(char input)
 		}
 
 	}
-	else if (input == 'k' || input == 'K')
+	else if (input == 'k' || input == 'K') 
+		// This breakpoint was placed when I was debugging why the bullet would travel through enemies inside the level
+		// By using the debugger, I realized that I had assumed that m_pLevelData would include all playable actors on it.
+		// However, playable actors are simply printed on screen after the m_pLevelData prints the level outline
 	{
 		x = m_player.GetXPosition();
 		y = m_player.GetYPosition() + 1;
@@ -127,73 +128,74 @@ void GameplayState::UpdateShooting(char input)
 	
 }
 
-bool GameplayState::Update(bool processInput)
+void GameplayState::ProcessInput()
 {
-	if (processInput && !m_beatLevel)
+	int input = _getch();
+	int arrowInput = 0;
+	int newPlayerX = m_player.GetXPosition();
+	int newPlayerY = m_player.GetYPosition();
+
+	// One of the arrow keys were pressed
+	if (input == kArrowInput)
 	{
-		int input = _getch();
-		int arrowInput = 0;
-		int newPlayerX = m_player.GetXPosition();
-		int newPlayerY = m_player.GetYPosition();
+		arrowInput = _getch();
+	}
 
-		// One of the arrow keys were pressed
-		if (input == kArrowInput)
+	if ((input == kArrowInput && arrowInput == kLeftArrow) ||
+		(char)input == 'A' || (char)input == 'a')
+	{
+		newPlayerX--;
+	}
+	else if ((input == kArrowInput && arrowInput == kRightArrow) ||
+		(char)input == 'D' || (char)input == 'd')
+	{
+		newPlayerX++;
+	}
+	else if ((input == kArrowInput && arrowInput == kUpArrow) ||
+		(char)input == 'W' || (char)input == 'w')
+	{
+		newPlayerY--;
+	}
+	else if ((input == kArrowInput && arrowInput == kDownArrow) ||
+		(char)input == 'S' || (char)input == 's')
+	{
+		newPlayerY++;
+	}
+	else if ((char)input == 'I' || (char)input == 'i' || (char)input == 'J' || (char)input == 'j' || (char)input == 'K' || (char)input == 'k' || (char)input == 'L' || (char)input == 'l')
+	{
+		if (m_player.HasWeapon())
 		{
-			arrowInput = _getch();
-		}
-
-		if ((input == kArrowInput && arrowInput == kLeftArrow) ||
-			(char)input == 'A' || (char)input == 'a')
-		{
-			newPlayerX--;
-		}
-		else if ((input == kArrowInput && arrowInput == kRightArrow) ||
-			(char)input == 'D' || (char)input == 'd')
-		{
-			newPlayerX++;
-		}
-		else if ((input == kArrowInput && arrowInput == kUpArrow) ||
-			(char)input == 'W' || (char)input == 'w')
-		{
-			newPlayerY--;
-		}
-		else if ((input == kArrowInput && arrowInput == kDownArrow) ||
-			(char)input == 'S' || (char)input == 's')
-		{
-			newPlayerY++;
-		}
-		else if ( (char)input == 'I' || (char)input == 'i' || (char)input == 'J' || (char)input == 'j' || (char)input == 'K' || (char)input == 'k' || (char)input == 'L' || (char)input == 'l')
-		{
-			if (m_player.HasWeapon())
-			{
-				UpdateShooting((char)input);
-			}
-		}
-		else if (input == kEscapeKey)
-		{
-			m_pOwner->LoadScene(StateMachineExampleGame::SceneName::MainMenu);
-		}
-		else if ((char)input == 'Z' || (char)input == 'z')
-		{
-			m_player.DropKey();
-		}
-
-		// If position never changed
-		if (newPlayerX == m_player.GetXPosition() && newPlayerY == m_player.GetYPosition())
-		{
-			//return false;
-		}
-		else
-		{
-			HandleCollision(newPlayerX, newPlayerY);
+			UpdateShooting((char)input);
 		}
 	}
-	if (m_beatLevel)
+	else if (input == kEscapeKey)
+	{
+		m_pOwner->LoadScene(StateMachineExampleGame::SceneName::MainMenu);
+	}
+	else if ((char)input == 'Z' || (char)input == 'z')
+	{
+		m_player.DropKey();
+	}
+
+	// If position never changed
+	if (newPlayerX == m_player.GetXPosition() && newPlayerY == m_player.GetYPosition())
+	{
+		//return false;
+	}
+	else
+	{
+		HandleCollision(newPlayerX, newPlayerY);
+	}
+}
+
+void GameplayState::CheckBeatLevel()
+{
+	if (m_pLevel->DidBeatLevel())
 	{
 		++m_skipFrameCount;
 		if (m_skipFrameCount > kFramesToSkip)
 		{
-			m_beatLevel = false;
+			m_player.resetWin();
 			m_skipFrameCount = 0;
 			++m_currentLevel;
 			if (m_currentLevel == m_LevelNames.size())
@@ -201,7 +203,7 @@ bool GameplayState::Update(bool processInput)
 				Utility::WriteHighScore(m_player.GetMoney());
 
 				AudioManager::GetInstance()->PlayWinSound();
-				
+
 				m_pOwner->LoadScene(StateMachineExampleGame::SceneName::Win);
 			}
 			else
@@ -209,109 +211,37 @@ bool GameplayState::Update(bool processInput)
 				// On to the next level
 				Load();
 			}
-
 		}
 	}
+}
 
-	return false;
+
+void GameplayState::Update()
+{
+	if (!m_pLevel->DidBeatLevel())
+	{
+		ProcessInput();
+	}
+
+	CheckBeatLevel();
 }
 
 void GameplayState::HandleCollision(int newPlayerX, int newPlayerY)
 {
 	PlacableActor* collidedActor = m_pLevel->UpdateActors(m_player.GetXPosition(), m_player.GetYPosition(), newPlayerX, newPlayerY);
-	if (collidedActor != nullptr && collidedActor->IsActive())
+	if (collidedActor != nullptr)
 	{
-		switch (collidedActor->GetType())
-		{
-		case ActorType::Enemy:
-		{
-			Enemy* collidedEnemy = dynamic_cast<Enemy*>(collidedActor);
-			assert(collidedEnemy);
-			AudioManager::GetInstance()->PlayLoseLivesSound();
-			collidedEnemy->Remove();
-			m_player.SetPosition(newPlayerX, newPlayerY);
+		collidedActor->HandleCollision(m_player);
 
-			m_player.DecrementLives();
-			if (m_player.GetLives() < 0)
-			{
-				//TODO: Go to game over screen
-				AudioManager::GetInstance()->PlayLoseSound();
-				m_pOwner->LoadScene(StateMachineExampleGame::SceneName::Lose);
-			}
-			break;
-		}
-		case ActorType::Money:
+		if (m_player.WonGame())
 		{
-			Money* collidedMoney = dynamic_cast<Money*>(collidedActor);
-			assert(collidedMoney);
-			AudioManager::GetInstance()->PlayMoneySound();
-			collidedMoney->Remove();
-			m_player.AddMoney(collidedMoney->GetWorth());
-			m_player.SetPosition(newPlayerX, newPlayerY);
-			break;
+			m_pLevel->FinishedLevel();
 		}
-		case ActorType::Key:
+		else if (!(m_player.isAlive()))
 		{
-			Key* collidedKey = dynamic_cast<Key*>(collidedActor);
-			assert(collidedKey);
-			if (!m_player.HasKey())
-			{
-				m_player.PickupKey(collidedKey);
-				collidedKey->Remove();
-				m_player.SetPosition(newPlayerX, newPlayerY);
-				AudioManager::GetInstance()->PlayKeyPickupSound();
-			}
-			break;
-		}
-		case ActorType::Weapon:
-		{
-			Weapon* collidedWeapon = dynamic_cast<Weapon*>(collidedActor);
-			assert(collidedWeapon);
-			if (!m_player.HasWeapon())
-			{
-				m_player.PickupWeapon(collidedWeapon);
-				collidedWeapon->Remove();
-				m_player.SetPosition(newPlayerX, newPlayerY);
-			}
-
-			break;
-		}
-		case ActorType::Door:
-		{
-			Door* collidedDoor = dynamic_cast<Door*>(collidedActor);
-			assert(collidedDoor);
-			if (!collidedDoor->IsOpen())
-			{
-				if (m_player.HasKey(collidedDoor->GetColor()))
-				{
-					collidedDoor->Open();
-					collidedDoor->Remove();
-					m_player.UseKey();
-					m_player.SetPosition(newPlayerX, newPlayerY);
-					AudioManager::GetInstance()->PlayDoorOpenSound();
-				}
-				else
-				{
-					AudioManager::GetInstance()->PlayDoorClosedSound();
-				}
-			}
-			else
-			{
-				m_player.SetPosition(newPlayerX, newPlayerY);
-			}
-			break;
-		}
-		case ActorType::Goal:
-		{
-			Goal* collidedGoal = dynamic_cast<Goal*>(collidedActor);
-			assert(collidedGoal);
-			collidedGoal->Remove();
-			m_player.SetPosition(newPlayerX, newPlayerY);
-			m_beatLevel = true;
-			break;
-		}
-		default:
-			break;
+			//TODO: Go to game over screen
+			AudioManager::GetInstance()->PlayLoseSound();
+			m_pOwner->LoadScene(StateMachineExampleGame::SceneName::Lose);
 		}
 	}
 	else if (m_pLevel->IsSpace(newPlayerX, newPlayerY)) // no collision

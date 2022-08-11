@@ -17,16 +17,19 @@ void Game::Initialize(GameStateMachine* pStateMachine)
 
 void Game::RunGameLoop()
 {
-	bool isGameOver = false;
-
-	while (!isGameOver)
+	while (!m_doQuitGame)
 	{
-		// update with no input
-		Update(false);
+		// check if level was beat
+		CheckBeatLevel();
+
 		// Draw
 		Draw();
-		// Update with input
-		isGameOver = Update();
+
+
+		Update();
+
+		// The only way to quit the game play loop is when hits 4 to quit in MainMenuState
+		m_doQuitGame = m_pStateMachine->DoQuitGame();
 	}
 
 	Draw();
@@ -38,9 +41,14 @@ void Game::Deinitialize()
 		m_pStateMachine->Cleanup();
 }
 
-bool Game::Update(bool processInput)
+void Game::Update()
 {
-	return m_pStateMachine->UpdateCurrentState(processInput);
+	m_pStateMachine->UpdateCurrentState();
+}
+
+void Game::CheckBeatLevel()
+{
+	m_pStateMachine->CheckBeatLevel();
 }
 
 void Game::Draw()
