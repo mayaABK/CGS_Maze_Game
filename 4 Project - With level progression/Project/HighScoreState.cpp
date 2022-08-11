@@ -15,16 +15,6 @@ HighScoreState::HighScoreState(StateMachineExampleGame* pOwner)
 	m_HighScores = Utility::WriteHighScore(0);
 }
 
-bool HighScoreState::Update(bool processInput)
-{
-	if (processInput)
-	{
-		int input = _getch();
-		m_pOwner->LoadScene(StateMachineExampleGame::SceneName::MainMenu);
-	}
-	return false;
-}
-
 void HighScoreState::Draw()
 {
 	system("cls");
@@ -39,4 +29,10 @@ void HighScoreState::Draw()
 	cout << endl << endl;
 	cout << "             Press any key to go back to the main menu" << endl << endl << endl;
 
+}
+
+void HighScoreState::Update()
+{
+	int input = _getch();
+	m_pOwner->LoadScene(StateMachineExampleGame::SceneName::MainMenu);
 }

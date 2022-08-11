@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <conio.h>
 #include <windows.h>
-#include <assert.h>
 
 #include "Enemy.h"
 #include "Key.h"
@@ -191,40 +190,40 @@ void GameplayState::ProcessInput()
 
 void GameplayState::CheckBeatLevel()
 {
-	++m_skipFrameCount;
-	if (m_skipFrameCount > kFramesToSkip)
+	if (m_pLevel->DidBeatLevel())
 	{
-		m_player.resetWin();
-		m_skipFrameCount = 0;
-		++m_currentLevel;
-		if (m_currentLevel == m_LevelNames.size())
+		++m_skipFrameCount;
+		if (m_skipFrameCount > kFramesToSkip)
 		{
-			Utility::WriteHighScore(m_player.GetMoney());
+			m_player.resetWin();
+			m_skipFrameCount = 0;
+			++m_currentLevel;
+			if (m_currentLevel == m_LevelNames.size())
+			{
+				Utility::WriteHighScore(m_player.GetMoney());
 
-			AudioManager::GetInstance()->PlayWinSound();
+				AudioManager::GetInstance()->PlayWinSound();
 
-			m_pOwner->LoadScene(StateMachineExampleGame::SceneName::Win);
-		}
-		else
-		{
-			// On to the next level
-			Load();
+				m_pOwner->LoadScene(StateMachineExampleGame::SceneName::Win);
+			}
+			else
+			{
+				// On to the next level
+				Load();
+			}
 		}
 	}
 }
 
-bool GameplayState::Update(bool processInput)
+
+void GameplayState::Update()
 {
-	if (processInput && !m_pLevel->DidBeatLevel())
+	if (!m_pLevel->DidBeatLevel())
 	{
 		ProcessInput();
 	}
-	if (m_pLevel->DidBeatLevel())
-	{
-		CheckBeatLevel();
-	}
 
-	return false;
+	CheckBeatLevel();
 }
 
 void GameplayState::HandleCollision(int newPlayerX, int newPlayerY)

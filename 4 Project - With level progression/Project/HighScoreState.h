@@ -14,7 +14,8 @@ public:
 	HighScoreState(StateMachineExampleGame* pOwner);
 	~HighScoreState() = default;
 
-	virtual bool Update(bool processInput = true) override;
+	virtual GameStateType GetType() override { return GameStateType::HighScore; }
 	virtual void Draw() override;
+	virtual void Update() override;
 };
 

@@ -13,6 +13,8 @@ public:
 	void Deinitialize();
 
 private:
-	bool Update(bool processInput = true);
+	void Update();
+	void CheckBeatLevel();
+	bool m_doQuitGame = false;
 	void Draw();
 };

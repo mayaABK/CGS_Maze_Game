@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "StateMachineExampleGame.h"
 #include "GameplayState.h"
 #include "MainMenuState.h"
@@ -20,9 +22,35 @@ bool StateMachineExampleGame::Init()
 	return true;
 }
 
-bool StateMachineExampleGame::UpdateCurrentState(bool processInput)
+bool StateMachineExampleGame::DoQuitGame()
 {
-	bool done = false;
+	if (m_pCurrentState->GetType() == GameStateType::MainMenu)
+	{
+		MainMenuState* mainMenuState = dynamic_cast<MainMenuState*>(m_pCurrentState);
+		assert(mainMenuState);
+		return mainMenuState->ShouldQuitGame();
+	}
+	return false;
+}
+
+void StateMachineExampleGame::CheckBeatLevel()
+{
+	if (m_pNextState != nullptr)
+	{
+		ChangeState(m_pNextState);
+		m_pNextState = nullptr;
+	}
+
+	if (m_pCurrentState != nullptr && m_pCurrentState->GetType() == GameStateType::Gameplay)
+	{
+		GameplayState* gameplayState = dynamic_cast<GameplayState*>(m_pCurrentState);
+		assert(gameplayState);
+		gameplayState->CheckBeatLevel();
+	}
+}
+
+void StateMachineExampleGame::UpdateCurrentState()
+{
 	if (m_pNextState != nullptr)
 	{
 		ChangeState(m_pNextState);
@@ -31,9 +59,8 @@ bool StateMachineExampleGame::UpdateCurrentState(bool processInput)
 
 	if (m_pCurrentState != nullptr)
 	{
-		done = m_pCurrentState->Update(processInput);
+		m_pCurrentState->Update();
 	}
-	return done;
 }
 
 void StateMachineExampleGame::DrawCurrentState()

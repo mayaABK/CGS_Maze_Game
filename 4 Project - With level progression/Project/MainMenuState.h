@@ -11,7 +11,11 @@ public:
 	MainMenuState(StateMachineExampleGame* pOwner);
 	~MainMenuState() = default;
 
-	virtual bool Update(bool processInput = true) override;
+	virtual GameStateType GetType() override { return GameStateType::MainMenu; }
+	virtual void Update() override;
 	virtual void Draw() override;
+	bool ShouldQuitGame() { return m_shouldQuit; }
+private:
+	bool m_shouldQuit;
 };
 
